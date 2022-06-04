@@ -1,0 +1,27 @@
+services:
+  envoy:
+    image: envoyproxy/envoy-dev:latest
+    ports:
+      - 8080:80
+    volumes:
+      - ./envoy/envoy.yaml:/etc/envoy/envoy.yaml
+
+  jwks:
+    build: ./jwks-service
+    ports:
+      - 4005:4005
+
+  auth:
+    build: ./auth-service
+    environment:
+      - JWKS_ENDPOINT=http://jwks:4005/.well-known/jwks
+
+  router:
+    image: ghcr.io/apollographql/router:v0.9.2
+    volumes:
+      - ./router:/dist/config
+    environment:
+      - APOLLO_ROUTER_SUPERGRAPH_PATH=/dist/config/supergraph.graphql
+
+  subgraph:
+    build: ./subgraph

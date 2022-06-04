@@ -1,0 +1,5 @@
+{
+  "yaml.schemas": {
+    ".vscode/router.config.json": "router.yaml"
+  }
+}

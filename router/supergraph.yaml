@@ -1,0 +1,8 @@
+subgraphs:
+  subgraph:
+    routing_url: http://subgraph:4001/
+    schema:
+      sdl: |
+        type Query {
+          hello: String
+        }

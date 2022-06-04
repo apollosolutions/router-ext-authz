@@ -1,0 +1,21 @@
+decision_logs:
+  console: true
+
+plugins:
+  envoy_ext_authz_grpc:
+    addr: :9191
+    enable-reflection: true
+    path: envoy/authz/result
+
+services:
+  - name: bundles
+    url: http://opa-bundle-server/
+
+bundles:
+  authz:
+    service: bundles
+    resource: /bundle.tar.gz
+    persist: true
+    polling:
+      min_delay_seconds: 3
+      max_delay_seconds: 5

@@ -1,0 +1,12 @@
+{
+  "name": "subgraph",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@apollo/subgraph": "^2.0.3",
+    "apollo-server": "^3.8.1",
+    "graphql": "^16.5.0"
+  }
+}
