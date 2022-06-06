@@ -6,3 +6,7 @@ headers:
         named: x-user-id
     - propagate:
         named: x-user-name
+telemetry:
+  metrics:
+    prometheus:
+      enabled: true

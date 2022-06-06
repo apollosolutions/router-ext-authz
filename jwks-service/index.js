@@ -23,7 +23,7 @@ app.post("/login", express.json(), async (req, res) => {
     .setIssuer("com.example.issuer")
     .setAudience("com.example.audience")
     .setIssuedAt()
-    .setExpirationTime("2h")
+    // .setExpirationTime("2h") // TODO: removing this to make it easier to mint tokens for the README
     .sign(privateKey);
 
   res.send(jwt);

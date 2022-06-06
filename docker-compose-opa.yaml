@@ -27,7 +27,7 @@ services:
       - 9191:9191
 
   router:
-    image: ghcr.io/apollographql/router:v0.9.2
+    image: ghcr.io/apollographql/router:v0.9.3
     volumes:
       - ./router:/dist/config
     environment:
