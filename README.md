@@ -79,7 +79,7 @@ Open Policy Agent downloads a policy bundle from the bundle server, which contai
 
 ## Limitations
 
-- No support for key rotation (selecting the appropriate with according to its `kid`).
+- Does not demonstrate key rotation (the JWKS server returning multiple keys in a single key set and verifying the JWT with the correct key by matching `kid`.) See the [Open Policy Agent blog post](https://blog.styra.com/blog/integrating-identity-oauth2-and-openid-connect-in-open-policy-agent) for an example.
 
 ## Appendix
 
