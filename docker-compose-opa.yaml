@@ -22,7 +22,7 @@ services:
       - JWKS_ENDPOINT=http://jwks:4005/.well-known/jwks
     volumes:
       - ./opa/:/etc/config/
-    command: "run --server --config-file /etc/config/opa.yaml --log-level debug"
+    command: "run --server --config-file /etc/config/opa.yaml --set=decision_logs.console=true --log-format=json-pretty"
     ports:
       - 9191:9191
 
@@ -30,8 +30,7 @@ services:
     image: ghcr.io/apollographql/router:v0.9.3
     volumes:
       - ./router:/dist/config
-    environment:
-      - APOLLO_ROUTER_SUPERGRAPH_PATH=/dist/config/supergraph.graphql
+    command: "--log debug --supergraph /dist/config/supergraph.graphql"
 
   subgraph:
     build: ./subgraph

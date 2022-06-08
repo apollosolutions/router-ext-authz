@@ -24,7 +24,7 @@ static_resources:
                         - match:
                             prefix: "/"
                           route:
-                            cluster: gateway
+                            cluster: router
                 http_filters:
                   - name: envoy.ext_authz
                     typed_config:
@@ -43,25 +43,14 @@ static_resources:
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   clusters:
-    - name: gateway
+    - name: router
       type: LOGICAL_DNS
       load_assignment:
-        cluster_name: gateway
+        cluster_name: router
         endpoints:
           - lb_endpoints:
               - endpoint:
                   address:
                     socket_address:
                       address: router
-                      port_value: 4000
-    - name: auth
-      type: LOGICAL_DNS
-      load_assignment:
-        cluster_name: auth
-        endpoints:
-          - lb_endpoints:
-              - endpoint:
-                  address:
-                    socket_address:
-                      address: auth
                       port_value: 4000
