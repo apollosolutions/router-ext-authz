@@ -11,6 +11,19 @@ default allow = {
   "http_status": 200
 }
 
+allow = r {
+  token.payload
+  not token.valid
+  r := {
+    "allowed": false,
+    "body": "{ \"data\": null, \"errors\": [{ \"message\": \"Invalid credentials\", \"extensions\": { \"http_status\": 403 } }]}",
+    "headers": {
+      "content-type": "application/json",
+    },
+    "http_status": 200
+  }
+}
+
 # OPA is configured to use /envoy/authz/result for the ext_authn response.
 # if allow == true, headers are added to the upstream response
 # if allow == false, http_status, headers, and body are used in the denied response
