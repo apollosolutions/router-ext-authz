@@ -1,0 +1,44 @@
+resources:
+  - "@type": type.googleapis.com/envoy.config.listener.v3.Listener
+    name: listener_0
+    address:
+      socket_address:
+        address: 0.0.0.0
+        port_value: 80
+    filter_chains:
+      - filters:
+          - name: envoy.filters.network.http_connection_manager
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+              stat_prefix: ingress_http
+              access_log:
+                - name: envoy.access_loggers.stdout
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
+              route_config:
+                name: local_route
+                virtual_hosts:
+                  - name: local_service
+                    domains: ["*"]
+                    routes:
+                      - match:
+                          prefix: "/"
+                        route:
+                          cluster: router
+              http_filters:
+                - name: envoy.ext_authz
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+                    transport_api_version: V3
+                    with_request_body:
+                      max_request_bytes: 8192
+                      allow_partial_message: true
+                    failure_mode_allow: false
+                    grpc_service:
+                      google_grpc:
+                        target_uri: opa:9191
+                        stat_prefix: ext_authz
+                      timeout: 0.5s
+                - name: envoy.filters.http.router
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router

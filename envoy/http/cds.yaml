@@ -1,0 +1,25 @@
+resources:
+  - "@type": type.googleapis.com/envoy.config.cluster.v3.Cluster
+    name: router
+    type: LOGICAL_DNS
+    load_assignment:
+      cluster_name: router
+      endpoints:
+        - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: router
+                    port_value: 4000
+  - "@type": type.googleapis.com/envoy.config.cluster.v3.Cluster
+    name: auth
+    type: LOGICAL_DNS
+    load_assignment:
+      cluster_name: auth
+      endpoints:
+        - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: auth
+                    port_value: 4000

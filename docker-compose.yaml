@@ -5,6 +5,7 @@ services:
       - 8080:80
     volumes:
       - ./envoy/envoy.yaml:/etc/envoy/envoy.yaml
+      - ./envoy/http:/var/lib/envoy
 
   jwks:
     build: ./jwks-service

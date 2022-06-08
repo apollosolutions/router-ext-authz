@@ -4,7 +4,8 @@ services:
     ports:
       - 8080:80
     volumes:
-      - ./envoy/envoy-opa.yaml:/etc/envoy/envoy.yaml
+      - ./envoy/envoy.yaml:/etc/envoy/envoy.yaml
+      - ./envoy/opa:/var/lib/envoy
 
   jwks:
     build: ./jwks-service
