@@ -5,4 +5,10 @@ subgraphs:
       sdl: |
         type Query {
           hello: String
+          user: User
+        }
+
+        type User {
+          id: ID
+          friends: [User]
         }

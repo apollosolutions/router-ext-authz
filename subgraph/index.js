@@ -6,6 +6,12 @@ const server = new ApolloServer({
     typeDefs: gql(`
       type Query {
         hello: String
+        user: User
+      }
+
+      type User {
+        id: ID
+        friends: [User]
       }
     `),
     resolvers: {

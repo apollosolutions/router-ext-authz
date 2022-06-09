@@ -2,64 +2,58 @@ package envoy.authz
 
 import input.attributes.request.http as http_request
 
-default allow = {
-  "allowed": false,
-  "body": "{ \"data\": null, \"errors\": [{ \"message\": \"Missing credentials\", \"extensions\": { \"http_status\": 401 } }]}",
-  "headers": {
-    "content-type": "application/json",
-  },
-  "http_status": 200
-}
+default result = { "allowed": false }
 
-allow = r {
-  token.payload
-  not token.valid
-  r := {
-    "allowed": false,
-    "body": "{ \"data\": null, \"errors\": [{ \"message\": \"Invalid credentials\", \"extensions\": { \"http_status\": 403 } }]}",
-    "headers": {
-      "content-type": "application/json",
-    },
-    "http_status": 200
-  }
-}
-
-# OPA is configured to use /envoy/authz/result for the ext_authn response.
-# if allow == true, headers are added to the upstream response
-# if allow == false, http_status, headers, and body are used in the denied response
-
-result["allowed"] := allow.allowed
-result["body"] := allow.body
-result["headers"] := object.union(allow.headers, {
-  # denied responses must respect CORS headers for response bodies to appear in browsers
-  "access-control-allow-origin": http_request.headers.origin
-})
-result["http_status"] := allow.http_status
-
-# allow CORS preflights
-allow = r {
+# OPTIONS preflight requests
+result = { "allowed": true } {
   http_request.method == "OPTIONS"
-  r := { "allowed": true }
 }
 
-# allow basic GET requests
-allow = r {
+# Simple requests
+result = { "allowed": true } {
   http_request.method == "GET"
   not is_application_json
-  r := { "allowed": true }
 }
 
-# check GraphQL requests for valid tokens
-allow = r {
+# Missing authorization header
+missing_credentials = json.marshal({ "data": null, "errors": [{ "message": "Missing credentials", "extensions": { "status_code": 401 } }] })
+result = { "allowed": false, "headers": denied_response_headers, "body": missing_credentials, "http_status": 200 } {
+  is_graphql_request
+  not token
+}
+
+# Invalid JWT
+invalid_credentials_body = json.marshal({ "data": null, "errors": [{ "message": "Invalid credentials", "extensions": { "status_code": 403 } }] })
+result = { "allowed": false, "headers": denied_response_headers, "body": invalid_credentials_body, "http_status": 200 } {
+  is_graphql_request
+  token
+  not is_token_valid
+}
+
+# Operation depth too large
+depth_limit_body = json.marshal({ "data": null, "errors": [{ "message": "Query depth limit exceeded", "extensions": { "status_code": 400 } }] })
+result = { "allowed": false, "headers": denied_response_headers, "body": depth_limit_body, "http_status": 200  } {
   is_graphql_request
   is_token_valid
-  r := {
-    "allowed": true,
-    "headers": {
-      "x-user-id": token.payload.sub,
-      "x-user-name": token.payload.name,
-    }
-  }
+  operation_exceeds_depth_limit
+}
+
+# OK result, pass JWT claims to router
+result = { "allowed": true, "headers": allowed_request_headers } {
+  is_graphql_request
+  is_token_valid
+  not operation_exceeds_depth_limit
+}
+
+denied_response_headers = {
+  "content-type": "application/json",
+  # denied responses must respect CORS headers for response bodies to appear in browsers
+  "access-control-allow-origin": http_request.headers.origin
+}
+
+allowed_request_headers = {
+  "x-user-id": token.payload.sub,
+  "x-user-name": token.payload.name,
 }
 
 is_application_json {
@@ -94,3 +88,22 @@ jwks_request(url) = http.send({
 
 # decode_verify requires a json-encoded string, not an object
 jwks = json.marshal(jwks_request(opa.runtime().env["JWKS_ENDPOINT"]).body)
+
+# parsed operation documents
+parsed_document = graphql.parse_query(input.parsed_body.query)
+
+named_operation = o {
+  	parsed_document.Operations[_].Name == input.parsed_body.operationName
+    o := parsed_document.Operations[_]
+}
+
+anonymous_operation = parsed_document.Operations[0]
+
+operation = o { o := named_operation }
+operation = o { o := anonymous_operation }
+
+default operation_exceeds_depth_limit = false
+operation_exceeds_depth_limit {
+  # limit to depth of 8
+  operation.SelectionSet[_].SelectionSet[_].SelectionSet[_].SelectionSet[_].SelectionSet[_].SelectionSet[_].SelectionSet[_].SelectionSet[_]
+}

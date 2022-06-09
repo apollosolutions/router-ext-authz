@@ -1,32 +1,29 @@
+
 schema
-  @core(feature: "https://specs.apollo.dev/core/v0.2")
-  @core(feature: "https://specs.apollo.dev/join/v0.1", for: EXECUTION) {
+  @core(feature: "https://specs.apollo.dev/core/v0.2"),
+  @core(feature: "https://specs.apollo.dev/join/v0.1", for: EXECUTION)
+{
   query: Query
 }
 
-directive @core(
-  as: String
-  feature: String!
-  for: core__Purpose
-) repeatable on SCHEMA
+directive @core(as: String, feature: String!, for: core__Purpose) repeatable on SCHEMA
 
-directive @join__field(
-  graph: join__Graph
-  provides: join__FieldSet
-  requires: join__FieldSet
-) on FIELD_DEFINITION
+directive @join__field(graph: join__Graph, provides: join__FieldSet, requires: join__FieldSet) on FIELD_DEFINITION
 
 directive @join__graph(name: String!, url: String!) on ENUM_VALUE
 
 directive @join__owner(graph: join__Graph!) on INTERFACE | OBJECT
 
-directive @join__type(
-  graph: join__Graph!
-  key: join__FieldSet
-) repeatable on INTERFACE | OBJECT
+directive @join__type(graph: join__Graph!, key: join__FieldSet) repeatable on INTERFACE | OBJECT
 
 type Query {
   hello: String @join__field(graph: SUBGRAPH)
+  user: User @join__field(graph: SUBGRAPH)
+}
+
+type User {
+  friends: [User]
+  id: ID
 }
 
 enum core__Purpose {
@@ -44,5 +41,5 @@ enum core__Purpose {
 scalar join__FieldSet
 
 enum join__Graph {
-  SUBGRAPH @join__graph(name: "subgraph", url: "http://subgraph:4001/")
+  SUBGRAPH @join__graph(name: "subgraph" url: "http://subgraph:4001/")
 }
