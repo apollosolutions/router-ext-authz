@@ -37,3 +37,7 @@ app.post("/verify", express.json(), async (req, res) => {
 app.listen(4005, () => {
   console.log("jwks service running http://localhost:4005");
 });
+
+process.on("SIGTERM", () => {
+  process.exit(0);
+});

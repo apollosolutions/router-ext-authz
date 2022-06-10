@@ -1,5 +1,5 @@
 import express from "express";
-import { jwtVerify, createRemoteJWKSet } from "jose";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 import { URL } from "url";
 
 const jwks = createRemoteJWKSet(new URL(process.env.JWKS_ENDPOINT));
@@ -35,7 +35,7 @@ app.all("/", async (req, res) => {
     });
 
     res.setHeader("x-user-id", payload.sub);
-    res.setHeader("x-user-name", payload.name);
+    res.setHeader("x-user-name", /** @type {string} */ (payload.name));
 
     res.json({ ok: true });
   } catch (e) {
@@ -46,4 +46,8 @@ app.all("/", async (req, res) => {
 
 app.listen(4000, () => {
   console.log("auth server running on 4000");
+});
+
+process.on("SIGTERM", () => {
+  process.exit(0);
 });

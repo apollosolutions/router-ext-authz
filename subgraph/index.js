@@ -1,19 +1,10 @@
 import { ApolloServer, gql } from "apollo-server";
 import { buildSubgraphSchema } from "@apollo/subgraph";
+import { readFile } from "fs/promises";
 
 const server = new ApolloServer({
   schema: buildSubgraphSchema({
-    typeDefs: gql(`
-      type Query {
-        hello: String
-        user: User
-      }
-
-      type User {
-        id: ID
-        friends: [User]
-      }
-    `),
+    typeDefs: gql(await readFile("schema.graphql", "utf-8")),
     resolvers: {
       Query: {
         hello: (_, __, { userId, username }) => {
@@ -32,4 +23,4 @@ const server = new ApolloServer({
 });
 
 const { url } = await server.listen(4001);
-console.log(url);
+console.log(`subgraph running ${url}`);
